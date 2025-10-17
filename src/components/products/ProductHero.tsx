@@ -1,6 +1,6 @@
 export default function ProductHero() {
     return (
-        <section className="relative h-72 w-full overflow-hidden">
+        <section className="relative w-full overflow-hidden py-28">
             <div
                 className="absolute inset-0 bg-cover bg-center"
                 style={{

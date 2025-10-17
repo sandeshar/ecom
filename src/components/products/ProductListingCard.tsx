@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { CatalogProduct } from "@/data/products";
 
 const MAX_STARS = 5;
@@ -38,7 +39,9 @@ export default function ProductListingCard({ product }: ProductListingCardProps)
             <div className="flex flex-1 flex-col gap-4 p-6">
                 <div className="space-y-2">
                     <div className="flex items-start justify-between gap-4">
-                        <h3 className="text-lg font-semibold text-slate-900">{product.title}</h3>
+                        <Link className="text-lg font-semibold text-slate-900 transition hover:text-indigo-600" href={`/products/${product.id}`}>
+                            {product.title}
+                        </Link>
                         <span className="text-base font-semibold text-indigo-600">{product.price}</span>
                     </div>
                     <p className="text-sm text-slate-600">{product.description}</p>
@@ -69,10 +72,13 @@ export default function ProductListingCard({ product }: ProductListingCardProps)
                 </div>
 
                 <div className="flex items-center justify-between pt-2">
-                    <button className="flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 transition-colors hover:border-indigo-500 hover:text-indigo-500">
+                    <Link
+                        className="flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 transition-colors hover:border-indigo-500 hover:text-indigo-500"
+                        href={`/products/${product.id}`}
+                    >
                         <span className="material-symbols-outlined text-sm">visibility</span>
                         Preview
-                    </button>
+                    </Link>
                     <button className="flex items-center gap-2 rounded-full bg-indigo-500 px-4 py-2 text-xs font-semibold text-white transition-transform hover:-translate-y-0.5">
                         <span className="material-symbols-outlined text-sm">download</span>
                         Download
