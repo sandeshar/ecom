@@ -1,5 +1,5 @@
-import HighlightCard from "@/components/cards/HighlightCard";
-import SectionHeading from "@/components/SectionHeading";
+import HighlightCard from "@/components/home/cards/HighlightCard";
+import SectionHeading from "@/components/common/SectionHeading";
 import { featuredHighlights } from "@/data/homepage";
 
 export default function FeaturedSection() {

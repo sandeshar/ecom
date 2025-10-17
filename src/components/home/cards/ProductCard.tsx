@@ -23,12 +23,8 @@ export default function ProductCard({ item, index }: ProductCardProps) {
                 />
             </div>
             <div className="p-4">
-                <h3 className="font-semibold text-slate-900">
-                    {item.title}
-                </h3>
-                <p className="text-sm text-slate-900/70">
-                    {item.description}
-                </p>
+                <h3 className="font-semibold text-slate-900">{item.title}</h3>
+                <p className="text-sm text-slate-900/70">{item.description}</p>
             </div>
         </article>
     );

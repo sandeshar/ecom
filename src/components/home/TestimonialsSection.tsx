@@ -1,5 +1,5 @@
-import TestimonialCard from "@/components/cards/TestimonialCard";
-import SectionHeading from "@/components/SectionHeading";
+import TestimonialCard from "@/components/home/cards/TestimonialCard";
+import SectionHeading from "@/components/common/SectionHeading";
 import { testimonials } from "@/data/homepage";
 
 export default function TestimonialsSection() {

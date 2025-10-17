@@ -1,5 +1,5 @@
-import ProductCard from "@/components/cards/ProductCard";
-import SectionHeading from "@/components/SectionHeading";
+import ProductCard from "@/components/home/cards/ProductCard";
+import SectionHeading from "@/components/common/SectionHeading";
 import { newArrivals } from "@/data/homepage";
 
 export default function NewArrivalsSection() {

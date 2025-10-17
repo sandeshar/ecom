@@ -20,9 +20,7 @@ export default function TestimonialCard({ item }: TestimonialCardProps) {
             <div className="flex items-center gap-4">
                 <img alt={item.name} className="size-14 rounded-full object-cover" src={item.avatar} />
                 <div>
-                    <h3 className="font-semibold text-slate-900">
-                        {item.name}
-                    </h3>
+                    <h3 className="font-semibold text-slate-900">{item.name}</h3>
                     <div className="flex items-center gap-0.5 text-yellow-500">
                         {starIcons.map((icon, idx) => (
                             <span className="material-symbols-outlined text-base" key={`${item.id}-star-${idx}`}>

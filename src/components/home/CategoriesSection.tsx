@@ -1,5 +1,5 @@
-import CategoryCard from "@/components/cards/CategoryCard";
-import SectionHeading from "@/components/SectionHeading";
+import CategoryCard from "@/components/home/cards/CategoryCard";
+import SectionHeading from "@/components/common/SectionHeading";
 import { categoryFilters, popularCategories } from "@/data/homepage";
 
 export default function CategoriesSection() {
