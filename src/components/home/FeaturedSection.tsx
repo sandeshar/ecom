@@ -4,7 +4,7 @@ import { featuredHighlights } from "@/data/homepage";
 
 export default function FeaturedSection() {
     return (
-    <section className="scroll-mt-32 py-16" id="featured">
+        <section className="scroll-mt-32 py-16" id="featured">
             <div className="text-center">
                 <SectionHeading
                     title="Featured Designs"

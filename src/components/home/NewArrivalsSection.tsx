@@ -4,7 +4,7 @@ import { newArrivals } from "@/data/homepage";
 
 export default function NewArrivalsSection() {
     return (
-    <section className="scroll-mt-32 py-16" id="new-arrivals">
+        <section className="scroll-mt-32 py-16" id="new-arrivals">
             <div className="text-center">
                 <SectionHeading
                     title="New Arrivals"
