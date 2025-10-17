@@ -4,7 +4,7 @@ import { categoryFilters, popularCategories } from "@/data/homepage";
 
 export default function CategoriesSection() {
     return (
-        <section className="py-16">
+    <section className="scroll-mt-32 py-16" id="categories">
             <div className="text-center">
                 <SectionHeading
                     title="Popular Categories"

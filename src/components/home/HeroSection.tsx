@@ -1,6 +1,8 @@
+import Link from "next/link";
+
 export default function HeroSection() {
     return (
-        <section className="relative h-screen w-full overflow-hidden">
+        <section className="relative h-screen w-full overflow-hidden" id="home">
             <div
                 className="absolute inset-0 bg-cover bg-center"
                 style={{
@@ -23,12 +25,13 @@ export default function HeroSection() {
                 <p className="max-w-2xl text-lg text-white/80 animate-fade-in-down md:text-xl" style={{ animationDelay: "0.4s" }}>
                     Explore a curated collection of digital designs for all your creative needs.
                 </p>
-                <button
+                <Link
                     className="mt-4 flex h-14 min-w-[160px] items-center justify-center rounded-full bg-indigo-500 px-8 text-lg font-bold text-white shadow-lg transition-transform duration-300 hover:scale-105 animate-fade-in-down"
+                    href="/products"
                     style={{ animationDelay: "0.6s" }}
                 >
                     Browse Collection
-                </button>
+                </Link>
             </div>
         </section>
     );

@@ -2,10 +2,17 @@ import Link from "next/link";
 
 const navItems = [
     { label: "Home", href: "/" },
-    { label: "Marketplace", href: "/products" },
-    { label: "Cart", href: "/cart" },
-    { label: "Checkout", href: "/checkout" },
-    { label: "Admin", href: "/admin" },
+    { label: "Categories", href: "/#categories" },
+    { label: "Featured", href: "/#featured" },
+    { label: "New Arrivals", href: "/#new-arrivals" },
+    { label: "Testimonials", href: "/#testimonials" },
+];
+
+const utilityLinks = [
+    { label: "Marketplace", href: "/products", icon: "storefront" },
+    { label: "Cart", href: "/cart", icon: "shopping_cart" },
+    { label: "Checkout", href: "/checkout", icon: "credit_card" },
+    { label: "Admin", href: "/admin", icon: "dashboard" },
 ];
 
 export default function Navbar() {
@@ -58,15 +65,23 @@ export default function Navbar() {
                 </label>
 
                 <div className="flex items-center gap-2">
-                    <button className="flex h-10 min-w-[84px] items-center justify-center rounded-full bg-white/10 px-4 text-sm font-bold text-white transition-colors hover:bg-indigo-500">
-                        Upload
-                    </button>
-                    <button
-                        aria-label="View favourites"
-                        className="flex size-10 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-indigo-500"
+                    <Link
+                        href="/products"
+                        className="hidden h-10 items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 text-sm font-semibold text-white transition-colors hover:border-white/40 hover:bg-white/10 lg:flex"
                     >
-                        <span className="material-symbols-outlined text-xl">favorite</span>
-                    </button>
+                        <span className="material-symbols-outlined text-base">storefront</span>
+                        Marketplace
+                    </Link>
+                    {utilityLinks.slice(1).map((item) => (
+                        <Link
+                            key={item.href}
+                            aria-label={item.label}
+                            className="flex size-10 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-indigo-500"
+                            href={item.href}
+                        >
+                            <span className="material-symbols-outlined text-xl">{item.icon}</span>
+                        </Link>
+                    ))}
                 </div>
 
                 <div

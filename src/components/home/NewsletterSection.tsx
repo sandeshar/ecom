@@ -1,6 +1,9 @@
 export default function NewsletterSection() {
     return (
-        <section className="flex flex-col items-center gap-6 rounded-xl bg-indigo-500/10 px-4 py-20 text-center">
+        <section
+            className="scroll-mt-32 flex flex-col items-center gap-6 rounded-xl bg-indigo-500/10 px-4 py-20 text-center"
+            id="newsletter"
+        >
             <h2 className="text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">
                 Join Our Creative Community
             </h2>
