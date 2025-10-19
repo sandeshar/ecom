@@ -5,7 +5,10 @@ export default function CheckoutSuccessPage() {
         <main className="flex flex-1 flex-col bg-slate-950 text-white">
             <section className="relative overflow-hidden pb-24 pt-32">
                 <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 via-slate-900 to-slate-950" />
-                <div className="absolute inset-0 opacity-40" style={{ backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
+                <div
+                    className="absolute inset-0 opacity-40"
+                    style={{ backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px)", backgroundSize: "40px 40px" }}
+                />
                 <div className="relative z-10 mx-auto flex w-full max-w-3xl flex-col items-center gap-6 px-4 text-center sm:px-6 lg:px-8">
                     <div className="flex items-center justify-center">
                         <span className="material-symbols-outlined rounded-full bg-emerald-400/10 p-4 text-4xl text-emerald-300">
@@ -54,14 +57,18 @@ export default function CheckoutSuccessPage() {
                             <span className="material-symbols-outlined text-base text-indigo-500">workspace_premium</span>
                             <div>
                                 <div className="font-semibold text-slate-900">License & receipts</div>
-                                <p className="mt-1 text-slate-600">Download PDF receipts, licence certificates, and share with your finance team.</p>
+                                <p className="mt-1 text-slate-600">
+                                    Download PDF receipts, licence certificates, and share with your finance team.
+                                </p>
                             </div>
                         </div>
                         <div className="flex items-start gap-3">
                             <span className="material-symbols-outlined text-base text-indigo-500">folder_open</span>
                             <div>
                                 <div className="font-semibold text-slate-900">Version history</div>
-                                <p className="mt-1 text-slate-600">Every update from creators appears in your library with changelog notes.</p>
+                                <p className="mt-1 text-slate-600">
+                                    Every update from creators appears in your library with changelog notes.
+                                </p>
                             </div>
                         </div>
                         <div className="flex items-start gap-3">

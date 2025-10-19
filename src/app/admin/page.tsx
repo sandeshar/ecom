@@ -32,9 +32,9 @@ const teamReminders = [
 
 export default function AdminDashboardPage() {
     return (
-        <main className="flex flex-1 flex-col bg-slate-100 text-slate-900">
+        <main className="flex flex-1 flex-col text-slate-900">
             <header className="border-b border-slate-200 bg-white">
-                <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-4 py-10 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+                <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-6 py-10 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Dashboard</p>
                         <h1 className="mt-2 text-3xl font-semibold sm:text-4xl">Store control center</h1>
@@ -61,7 +61,7 @@ export default function AdminDashboardPage() {
                 </div>
             </header>
 
-            <section className="mx-auto w-full max-w-6xl px-4 pb-16 pt-10 sm:px-6">
+            <section className="mx-auto w-full max-w-6xl px-6 pb-16 pt-10">
                 <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                     {headlineMetrics.map((metric) => (
                         <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm" key={metric.label}>
