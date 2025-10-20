@@ -23,30 +23,20 @@ const navSections: NavSection[] = [
         ],
     },
     {
-        title: "Commerce",
+        title: "Management",
         items: [
             { label: "Products", href: "/admin/products", icon: "inventory_2" },
             { label: "Add Product", href: "/admin/products/new", icon: "add_circle" },
             { label: "Orders", href: "/admin/orders", icon: "receipt_long" },
+            { label: "Customers", href: "/admin/customers", icon: "group" },
+            { label: "Admins", href: "/admin/admins", icon: "shield_person" },
             { label: "Inventory", href: "/admin/inventory", icon: "warehouse" },
         ],
     },
     {
-        title: "Growth",
+        title: "Settings",
         items: [
-            { label: "Customers", href: "/admin/customers", icon: "group" },
-        ],
-    },
-    {
-        title: "Automation",
-        items: [
-            { label: "Flows", href: "/admin/automations", icon: "auto_fix_high" },
-        ],
-    },
-    {
-        title: "Operations",
-        items: [
-            { label: "Settings", href: "/admin/settings", icon: "tune" },
+            { label: "Store Settings", href: "/admin/settings", icon: "tune" },
         ],
     },
 ];
@@ -60,7 +50,7 @@ export default function AdminSidebar() {
     const pathname = usePathname();
 
     return (
-        <aside className="flex h-full w-64 flex-col border-r border-slate-200 bg-white px-4 py-6">
+        <aside className="sticky top-0 flex h-screen w-64 flex-col overflow-y-auto border-r border-slate-200 bg-white/95 px-4 py-6 backdrop-blur">
             <div className="flex items-center gap-3 px-2">
                 <span className="flex size-10 items-center justify-center rounded-2xl bg-indigo-500 text-xl font-semibold text-white">
                     DH
@@ -96,11 +86,6 @@ export default function AdminSidebar() {
                                             {item.icon}
                                         </span>
                                         {item.label}
-                                        {item.label === "Flows" ? (
-                                            <span className="ml-auto rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-indigo-600">
-                                                New
-                                            </span>
-                                        ) : null}
                                     </Link>
                                 );
                             })}
