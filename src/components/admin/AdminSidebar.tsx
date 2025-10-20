@@ -84,16 +84,14 @@ export default function AdminSidebar() {
                                     <Link
                                         key={item.href}
                                         href={item.href}
-                                        className={`group inline-flex items-center gap-3 rounded-2xl px-3 py-2 transition ${
-                                            active
+                                        className={`group inline-flex items-center gap-3 rounded-2xl px-3 py-2 transition ${active
                                                 ? "bg-indigo-50 text-indigo-600 shadow-sm"
                                                 : "hover:bg-slate-100 hover:text-slate-900"
-                                        }`}
+                                            }`}
                                     >
                                         <span
-                                            className={`material-symbols-outlined text-base ${
-                                                active ? "text-indigo-500" : "text-slate-400 group-hover:text-slate-500"
-                                            }`}
+                                            className={`material-symbols-outlined text-base ${active ? "text-indigo-500" : "text-slate-400 group-hover:text-slate-500"
+                                                }`}
                                         >
                                             {item.icon}
                                         </span>
