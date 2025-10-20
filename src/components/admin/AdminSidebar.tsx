@@ -26,7 +26,6 @@ const navSections: NavSection[] = [
         title: "Management",
         items: [
             { label: "Products", href: "/admin/products", icon: "inventory_2" },
-            { label: "Add Product", href: "/admin/products/new", icon: "add_circle" },
             { label: "Orders", href: "/admin/orders", icon: "receipt_long" },
             { label: "Customers", href: "/admin/customers", icon: "group" },
             { label: "Admins", href: "/admin/admins", icon: "shield_person" },
@@ -94,34 +93,14 @@ export default function AdminSidebar() {
                 ))}
             </nav>
 
-            <div className="mt-6 space-y-3">
-                <div className="rounded-2xl bg-slate-50 p-4 text-xs text-slate-500">
-                    <div className="flex items-start gap-2">
-                        <span className="material-symbols-outlined text-base text-indigo-400">lightbulb</span>
-                        <div>
-                            <div className="font-semibold text-slate-700">Need anything?</div>
-                            <p className="mt-1">
-                                Reach out to the storefront team for merchandising or campaign requests.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                <div className="rounded-2xl border border-indigo-100 bg-indigo-50 p-4 text-xs text-indigo-700">
-                    <div className="flex items-start gap-2">
-                        <span className="material-symbols-outlined text-base text-indigo-500">rocket_launch</span>
-                        <div>
-                            <div className="font-semibold text-indigo-900">Upgrade automation</div>
-                            <p className="mt-1">
-                                Unlock AI-powered merchandising and predictive inventory tools in the Pro plan.
-                            </p>
-                            <Link
-                                className="mt-3 inline-flex items-center gap-1 rounded-full bg-indigo-500 px-3 py-1 text-[11px] font-semibold text-white transition hover:bg-indigo-600"
-                                href="/admin/settings"
-                            >
-                                <span className="material-symbols-outlined text-sm">bolt</span>
-                                See plans
-                            </Link>
-                        </div>
+            <div className="rounded-2xl bg-slate-50 p-4 text-xs text-slate-500">
+                <div className="flex items-start gap-2">
+                    <span className="material-symbols-outlined text-base text-indigo-400">lightbulb</span>
+                    <div>
+                        <div className="font-semibold text-slate-700">Need anything?</div>
+                        <p className="mt-1">
+                            Reach out to the storefront team for merchandising or campaign requests.
+                        </p>
                     </div>
                 </div>
             </div>
