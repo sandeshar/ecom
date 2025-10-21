@@ -1,59 +1,68 @@
+"use client";
+
+import Notify from "@/components/common/Notification";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState, FormEvent } from "react";
 
 const categories = ["Illustrations", "Patterns", "UI Kits", "Mockups", "Branding", "Animation", "Typography"];
 const licenseOptions = ["Personal", "Commercial", "Extended"];
 
-export default function AdminNewProductPage() {
+const inputClass = "rounded-2xl border border-slate-200 px-4 py-3 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100";
+const labelClass = "text-xs font-semibold uppercase tracking-[0.3em] text-slate-400";
 
-    const handleSubmit = async (formData: FormData) => {
-        'use server';
-        const name = formData.get('name') as string;
-        const slug = formData.get('slug') as string;
-        const description = formData.get('description') as string;
-        const heroImage = formData.get('heroImage') as string;
-        const galleryImages = (formData.get('galleryImages') as string).split('\n').map(url => url.trim()).filter(url => url);
-        const highlights = (formData.get('highlights') as string).split('\n').map(item => item.trim()).filter(item => item);
-        const price = formData.get('price') as string;
-        const categories = Array.from(formData.getAll('categories')) as string[];
-        const licenseTiers = Array.from(formData.getAll('licenseTiers')) as string[];
-        const tags = (formData.get('tags') as string).split(',').map(tag => tag.trim()).filter(tag => tag);
-        const badge = formData.get('badge') as string;
+export default function AdminNewProductPage() {
+    const router = useRouter();
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [notification, setNotification] = useState<{ text: string; type: "success" | "error" } | null>(null);
+
+    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        setNotification(null);
+
+        const formData = new FormData(e.currentTarget);
+        const splitAndTrim = (value: string, separator: string) =>
+            value.split(separator).map(s => s.trim()).filter(Boolean);
+
         const productData = {
-            name,
-            slug,
-            description,
-            heroImage,
-            galleryImages,
-            highlights,
-            price,
-            categories,
-            licenseTiers,
-            tags,
-            badge
+            name: formData.get('name'),
+            slug: formData.get('slug'),
+            description: formData.get('description'),
+            heroImage: formData.get('heroImage'),
+            galleryImages: splitAndTrim(formData.get('galleryImages') as string, '\n'),
+            highlights: splitAndTrim(formData.get('highlights') as string, '\n'),
+            price: formData.get('price'),
+            categories: formData.getAll('categories'),
+            licenseTiers: formData.getAll('licenseTiers'),
+            tags: splitAndTrim(formData.get('tags') as string, ','),
+            badge: formData.get('badge')
         };
-        const submitProduct = async (data: typeof productData) => {
+
+        try {
             const response = await fetch('http://localhost:3002/products', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(productData)
             });
-            if (!response.ok) {
-                throw new Error('Failed to submit product, ' + response.statusText);
+
+            if (response.ok) {
+                setNotification({ text: "Product created successfully!", type: "success" });
+                setTimeout(() => router.push('/admin/products'), 1500);
+            } else {
+                const error = await response.json().catch(() => ({}));
+                setNotification({ text: error.message || "Failed to create product", type: "error" });
             }
-        };
-        console.log('Submitting product data:', productData);
-        try {
-            await submitProduct(productData);
-            console.log('Product submitted successfully');
-        } catch (error) {
-            console.error('Error submitting product:', error);
+        } catch {
+            setNotification({ text: "Error submitting product. Please check your connection.", type: "error" });
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
     return (
         <main className="flex flex-1 flex-col">
+            {notification && <Notify text={notification.text} type={notification.type} />}
             <header className="border-b border-slate-200 bg-white">
                 <div className="mx-auto flex w-full max-w-4xl flex-col gap-4 px-6 py-10 sm:flex-row sm:items-center sm:justify-between">
                     <div>
@@ -74,37 +83,21 @@ export default function AdminNewProductPage() {
             </header>
 
             <section className="mx-auto w-full max-w-4xl px-6 py-12">
-                <form action={handleSubmit} className="space-y-10">
+                <form onSubmit={handleSubmit} className="space-y-10">
                     <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
                         <h2 className="text-base font-semibold text-slate-900">Basics</h2>
                         <div className="mt-6 grid gap-6 md:grid-cols-2">
                             <label className="flex flex-col gap-2 text-sm text-slate-600">
-                                <span className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Product name</span>
-                                <input
-                                    name="name"
-                                    className="rounded-2xl border border-slate-200 px-4 py-3 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
-                                    placeholder="Aurora Abstract Kit"
-                                    required
-                                />
+                                <span className={labelClass}>Product name</span>
+                                <input name="name" className={inputClass} placeholder="Aurora Abstract Kit" required />
                             </label>
                             <label className="flex flex-col gap-2 text-sm text-slate-600">
-                                <span className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Slug</span>
-                                <input
-                                    name="slug"
-                                    className="rounded-2xl border border-slate-200 px-4 py-3 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
-                                    placeholder="aurora-abstract-kit"
-                                    required
-                                />
+                                <span className={labelClass}>Slug</span>
+                                <input name="slug" className={inputClass} placeholder="aurora-abstract-kit" required />
                             </label>
                             <label className="flex flex-col gap-2 text-sm text-slate-600 md:col-span-2">
-                                <span className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Short description</span>
-                                <textarea
-                                    name="description"
-                                    className="min-h-24 rounded-2xl border border-slate-200 px-4 py-3 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
-                                    placeholder="Summarize key value props for the storefront card."
-                                    rows={3}
-                                    required
-                                />
+                                <span className={labelClass}>Short description</span>
+                                <textarea name="description" className={`min-h-24 ${inputClass}`} placeholder="Summarize key value props for the storefront card." rows={3} required />
                             </label>
                         </div>
                     </div>
@@ -113,32 +106,16 @@ export default function AdminNewProductPage() {
                         <h2 className="text-base font-semibold text-slate-900">Media & content</h2>
                         <div className="mt-6 grid gap-6 md:grid-cols-2">
                             <label className="flex flex-col gap-2 text-sm text-slate-600 md:col-span-2">
-                                <span className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Hero image URL</span>
-                                <input
-                                    name="heroImage"
-                                    className="rounded-2xl border border-slate-200 px-4 py-3 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
-                                    placeholder="https://"
-                                    required
-                                    type="url"
-                                />
+                                <span className={labelClass}>Hero image URL</span>
+                                <input name="heroImage" className={inputClass} placeholder="https://" required type="url" />
                             </label>
                             <label className="flex flex-col gap-2 text-sm text-slate-600 md:col-span-2">
-                                <span className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Gallery images</span>
-                                <textarea
-                                    name="galleryImages"
-                                    className="min-h-24 rounded-2xl border border-slate-200 px-4 py-3 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
-                                    placeholder="Add one image URL per line"
-                                    rows={4}
-                                />
+                                <span className={labelClass}>Gallery images</span>
+                                <textarea name="galleryImages" className={`min-h-24 ${inputClass}`} placeholder="Add one image URL per line" rows={4} />
                             </label>
                             <label className="flex flex-col gap-2 text-sm text-slate-600 md:col-span-2">
-                                <span className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Highlights (bullet list)</span>
-                                <textarea
-                                    name="highlights"
-                                    className="min-h-24 rounded-2xl border border-slate-200 px-4 py-3 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
-                                    placeholder="Each line becomes a highlight"
-                                    rows={4}
-                                />
+                                <span className={labelClass}>Highlights (bullet list)</span>
+                                <textarea name="highlights" className={`min-h-24 ${inputClass}`} placeholder="Each line becomes a highlight" rows={4} />
                             </label>
                         </div>
                     </div>
@@ -147,25 +124,20 @@ export default function AdminNewProductPage() {
                         <h2 className="text-base font-semibold text-slate-900">Commerce</h2>
                         <div className="mt-6 grid gap-6 md:grid-cols-3">
                             <label className="flex flex-col gap-2 text-sm text-slate-600">
-                                <span className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Base price</span>
-                                <input
-                                    name="price"
-                                    className="rounded-2xl border border-slate-200 px-4 py-3 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
-                                    placeholder="$42"
-                                    required
-                                />
+                                <span className={labelClass}>Base price</span>
+                                <input name="price" className={inputClass} placeholder="$42" required />
                             </label>
                             <label className="flex flex-col gap-2 text-sm text-slate-600">
-                                <span className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Category</span>
-                                <select name="categories" className="rounded-2xl border border-slate-200 px-4 py-3 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100">
+                                <span className={labelClass}>Category</span>
+                                <select name="categories" className={inputClass}>
                                     {categories.map((category) => (
                                         <option key={category}>{category}</option>
                                     ))}
                                 </select>
                             </label>
                             <label className="flex flex-col gap-2 text-sm text-slate-600">
-                                <span className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">License tiers</span>
-                                <select name="licenseTiers" className="rounded-2xl border border-slate-200 px-4 py-3 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100" multiple>
+                                <span className={labelClass}>License tiers</span>
+                                <select name="licenseTiers" className={inputClass} multiple>
                                     {licenseOptions.map((license) => (
                                         <option key={license}>{license}</option>
                                     ))}
@@ -174,16 +146,12 @@ export default function AdminNewProductPage() {
                         </div>
                         <div className="mt-6 grid gap-6 md:grid-cols-2">
                             <label className="flex flex-col gap-2 text-sm text-slate-600">
-                                <span className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Tags</span>
-                                <input
-                                    name="tags"
-                                    className="rounded-2xl border border-slate-200 px-4 py-3 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
-                                    placeholder="Comma separated"
-                                />
+                                <span className={labelClass}>Tags</span>
+                                <input name="tags" className={inputClass} placeholder="Comma separated" />
                             </label>
                             <label className="flex flex-col gap-2 text-sm text-slate-600">
-                                <span className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Badge</span>
-                                <select name="badge" className="rounded-2xl border border-slate-200 px-4 py-3 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100">
+                                <span className={labelClass}>Badge</span>
+                                <select name="badge" className={inputClass}>
                                     <option value="">None</option>
                                     <option value="Featured">Featured</option>
                                     <option value="Best Seller">Best Seller</option>
@@ -209,11 +177,12 @@ export default function AdminNewProductPage() {
                                 Save draft
                             </button>
                             <button
-                                className="inline-flex items-center gap-2 rounded-full bg-indigo-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-indigo-600"
+                                className="inline-flex items-center gap-2 rounded-full bg-indigo-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed"
                                 type="submit"
+                                disabled={isSubmitting}
                             >
                                 <span className="material-symbols-outlined text-base">publish</span>
-                                Publish product
+                                {isSubmitting ? 'Publishing...' : 'Publish product'}
                             </button>
                         </div>
                     </div>
