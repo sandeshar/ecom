@@ -15,6 +15,23 @@ export default function AdminNewProductPage() {
     const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [notification, setNotification] = useState<{ text: string; type: "success" | "error" } | null>(null);
+    const [heroImagePreview, setHeroImagePreview] = useState<string | null>(null);
+    const [galleryPreviews, setGalleryPreviews] = useState<string[]>([]);
+
+    const handleHeroImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setHeroImagePreview(URL.createObjectURL(file));
+        }
+    };
+
+    const handleGalleryImagesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if (files) {
+            const previews = Array.from(files).map(file => URL.createObjectURL(file));
+            setGalleryPreviews(previews);
+        }
+    };
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -22,33 +39,18 @@ export default function AdminNewProductPage() {
         setNotification(null);
 
         const formData = new FormData(e.currentTarget);
-        const splitAndTrim = (value: string, separator: string) =>
-            value.split(separator).map(s => s.trim()).filter(Boolean);
 
-        const productData = {
-            name: formData.get('name'),
-            slug: formData.get('slug'),
-            description: formData.get('description'),
-            heroImage: formData.get('heroImage'),
-            galleryImages: splitAndTrim(formData.get('galleryImages') as string, '\n'),
-            highlights: splitAndTrim(formData.get('highlights') as string, '\n'),
-            price: formData.get('price'),
-            categories: formData.getAll('categories'),
-            licenseTiers: formData.getAll('licenseTiers'),
-            tags: splitAndTrim(formData.get('tags') as string, ','),
-            badge: formData.get('badge')
-        };
+        console.log("Submitting product:", Object.fromEntries(formData.entries()));
 
         try {
             const response = await fetch('http://localhost:3002/products', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(productData)
+                body: formData  // Send FormData directly
             });
 
             if (response.ok) {
                 setNotification({ text: "Product created successfully!", type: "success" });
-                setTimeout(() => router.push('/admin/products'), 1500);
+                // setTimeout(() => router.push('/admin/products'), 1500);
             } else {
                 const error = await response.json().catch(() => ({}));
                 setNotification({ text: error.message || "Failed to create product", type: "error" });
@@ -106,12 +108,53 @@ export default function AdminNewProductPage() {
                         <h2 className="text-base font-semibold text-slate-900">Media & content</h2>
                         <div className="mt-6 grid gap-6 md:grid-cols-2">
                             <label className="flex flex-col gap-2 text-sm text-slate-600 md:col-span-2">
-                                <span className={labelClass}>Hero image URL</span>
-                                <input name="heroImage" className={inputClass} placeholder="https://" required type="url" />
+                                <span className={labelClass}>Hero image</span>
+                                <input
+                                    type="file"
+                                    name="heroImage"
+                                    accept="image/*"
+                                    className={inputClass}
+                                    onChange={handleHeroImageChange}
+                                />
+                                {heroImagePreview && (
+                                    <div className="mt-3 relative rounded-2xl overflow-hidden border border-slate-200">
+                                        <img src={heroImagePreview} alt="Hero preview" className="w-full h-48 object-cover" />
+                                        <button
+                                            type="button"
+                                            onClick={() => setHeroImagePreview(null)}
+                                            className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-2 hover:bg-red-600 transition"
+                                        >
+                                            <span className="material-symbols-outlined text-sm">close</span>
+                                        </button>
+                                    </div>
+                                )}
                             </label>
                             <label className="flex flex-col gap-2 text-sm text-slate-600 md:col-span-2">
-                                <span className={labelClass}>Gallery images</span>
-                                <textarea name="galleryImages" className={`min-h-24 ${inputClass}`} placeholder="Add one image URL per line" rows={4} />
+                                <span className={labelClass}>Gallery images (Multiple)</span>
+                                <input
+                                    type="file"
+                                    name="galleryImages"
+                                    accept="image/*"
+                                    multiple
+                                    className={inputClass}
+                                    onChange={handleGalleryImagesChange}
+                                />
+                                {galleryPreviews.length > 0 && (
+                                    <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-3">
+                                        {galleryPreviews.map((preview, index) => (
+                                            <div key={index} className="relative rounded-xl overflow-hidden border border-slate-200">
+                                                <img src={preview} alt={`Gallery ${index + 1}`} className="w-full h-32 object-cover" />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setGalleryPreviews(prev => prev.filter((_, i) => i !== index))}
+                                                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition"
+                                                >
+                                                    <span className="material-symbols-outlined text-xs">close</span>
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </label>
                             <label className="flex flex-col gap-2 text-sm text-slate-600 md:col-span-2">
                                 <span className={labelClass}>Highlights (bullet list)</span>
