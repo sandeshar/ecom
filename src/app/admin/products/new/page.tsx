@@ -4,6 +4,8 @@ import Notify from "@/components/common/Notification";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, FormEvent } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { API_BASE_URL } from "@/lib/config";
 
 const categories = ["Illustrations", "Patterns", "UI Kits", "Mockups", "Branding", "Animation", "Typography"];
 const licenseOptions = ["Personal", "Commercial", "Extended"];
@@ -13,6 +15,7 @@ const labelClass = "text-xs font-semibold uppercase tracking-[0.3em] text-slate-
 
 export default function AdminNewProductPage() {
     const router = useRouter();
+    const { token } = useAuth();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [notification, setNotification] = useState<{ text: string; type: "success" | "error" } | null>(null);
     const [heroImagePreview, setHeroImagePreview] = useState<string | null>(null);
@@ -39,18 +42,30 @@ export default function AdminNewProductPage() {
         setNotification(null);
 
         const formData = new FormData(e.currentTarget);
+        if (!token) {
+            setNotification({ text: "Authentication required", type: "error" });
+            setIsSubmitting(false);
+            return;
+        }
 
-        console.log("Submitting product:", Object.fromEntries(formData.entries()));
+        if (!formData.get("published")) {
+            formData.append("published", "false");
+        }
+
+        console.log("Submitting product:", Object.fromEntries(formData.entries()))
 
         try {
-            const response = await fetch('http://localhost:3002/products', {
+            const response = await fetch(`${API_BASE_URL}/products`, {
                 method: 'POST',
-                body: formData  // Send FormData directly
+                body: formData,
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
             });
 
             if (response.ok) {
                 setNotification({ text: "Product created successfully!", type: "success" });
-                // setTimeout(() => router.push('/admin/products'), 1500);
+                setTimeout(() => router.push('/admin/products'), 1200);
             } else {
                 const error = await response.json().catch(() => ({}));
                 setNotification({ text: error.message || "Failed to create product", type: "error" });
@@ -100,6 +115,14 @@ export default function AdminNewProductPage() {
                             <label className="flex flex-col gap-2 text-sm text-slate-600 md:col-span-2">
                                 <span className={labelClass}>Short description</span>
                                 <textarea name="description" className={`min-h-24 ${inputClass}`} placeholder="Summarize key value props for the storefront card." rows={3} required />
+                            </label>
+                            <label className="flex flex-col gap-2 text-sm text-slate-600">
+                                <span className={labelClass}>SKU</span>
+                                <input name="sku" className={inputClass} placeholder="SKU-001" />
+                            </label>
+                            <label className="flex flex-col gap-2 text-sm text-slate-600">
+                                <span className={labelClass}>Inventory</span>
+                                <input name="inventory" type="number" min="0" className={inputClass} placeholder="100" />
                             </label>
                         </div>
                     </div>
@@ -160,6 +183,10 @@ export default function AdminNewProductPage() {
                                 <span className={labelClass}>Highlights (bullet list)</span>
                                 <textarea name="highlights" className={`min-h-24 ${inputClass}`} placeholder="Each line becomes a highlight" rows={4} />
                             </label>
+                            <label className="flex flex-col gap-2 text-sm text-slate-600 md:col-span-2">
+                                <span className={labelClass}>Digital asset URL (optional)</span>
+                                <input name="digitalAssetUrl" className={inputClass} placeholder="https://cdn.example.com/file.zip" type="url" />
+                            </label>
                         </div>
                     </div>
 
@@ -199,6 +226,10 @@ export default function AdminNewProductPage() {
                                     <option value="Featured">Featured</option>
                                     <option value="Best Seller">Best Seller</option>
                                 </select>
+                            </label>
+                            <label className="flex items-center gap-3 text-sm text-slate-600">
+                                <input name="published" type="checkbox" className="size-4 rounded border-slate-300 text-indigo-500 focus:ring-indigo-200" value="true" />
+                                <span>Publish immediately</span>
                             </label>
                         </div>
                     </div>

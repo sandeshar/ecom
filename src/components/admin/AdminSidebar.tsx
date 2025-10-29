@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
 
 type NavItem = {
     label: string;
@@ -47,6 +48,7 @@ function isActive(pathname: string, href: string) {
 
 export default function AdminSidebar() {
     const pathname = usePathname();
+    const { user, logout } = useAuth();
 
     return (
         <aside className="sticky top-0 flex h-screen w-64 flex-col overflow-y-auto border-r border-slate-200 bg-white/95 px-4 py-6 backdrop-blur">
@@ -74,12 +76,14 @@ export default function AdminSidebar() {
                                         key={item.href}
                                         href={item.href}
                                         className={`group inline-flex items-center gap-3 rounded-2xl px-3 py-2 transition ${active
-                                            ? "bg-indigo-50 text-indigo-600 shadow-sm"
-                                            : "hover:bg-slate-100 hover:text-slate-900"
+                                                ? "bg-indigo-50 text-indigo-600 shadow-sm"
+                                                : "hover:bg-slate-100 hover:text-slate-900"
                                             }`}
                                     >
                                         <span
-                                            className={`material-symbols-outlined text-base ${active ? "text-indigo-500" : "text-slate-400 group-hover:text-slate-500"
+                                            className={`material-symbols-outlined text-base ${active
+                                                    ? "text-indigo-500"
+                                                    : "text-slate-400 group-hover:text-slate-500"
                                                 }`}
                                         >
                                             {item.icon}
@@ -93,14 +97,32 @@ export default function AdminSidebar() {
                 ))}
             </nav>
 
-            <div className="rounded-2xl bg-slate-50 p-4 text-xs text-slate-500">
-                <div className="flex items-start gap-2">
-                    <span className="material-symbols-outlined text-base text-indigo-400">lightbulb</span>
-                    <div>
-                        <div className="font-semibold text-slate-700">Need anything?</div>
-                        <p className="mt-1">
-                            Reach out to the storefront team for merchandising or campaign requests.
-                        </p>
+            <div className="mt-auto space-y-4">
+                <div className="rounded-2xl bg-slate-50 p-4 text-xs text-slate-500">
+                    <div className="flex items-start gap-2">
+                        <span className="material-symbols-outlined text-base text-indigo-400">lightbulb</span>
+                        <div>
+                            <div className="font-semibold text-slate-700">Need anything?</div>
+                            <p className="mt-1">
+                                Reach out to the storefront team for merchandising or campaign requests.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div className="rounded-2xl border border-slate-200 p-4 text-xs text-slate-500">
+                    <div className="flex items-center justify-between gap-2">
+                        <div>
+                            <div className="text-sm font-semibold text-slate-800">{user?.name ?? "Admin"}</div>
+                            <div className="text-[11px] uppercase tracking-[0.3em] text-slate-400">Signed in</div>
+                        </div>
+                        <button
+                            className="inline-flex items-center gap-1 rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600 transition hover:border-rose-200 hover:text-rose-600"
+                            onClick={logout}
+                            type="button"
+                        >
+                            <span className="material-symbols-outlined text-sm">logout</span>
+                            Log out
+                        </button>
                     </div>
                 </div>
             </div>
