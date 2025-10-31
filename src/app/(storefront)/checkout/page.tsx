@@ -81,6 +81,7 @@ export default function CheckoutPage() {
                 },
                 subtotal,
                 tax,
+                shipping: fees,
                 total,
             };
 
