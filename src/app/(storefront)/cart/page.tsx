@@ -1,28 +1,8 @@
+"use client";
+
 import Link from "next/link";
-import { catalogProducts } from "@/data/products";
-
-type CartConfig = {
-    productId: string;
-    license: string;
-    quantity: number;
-    seatCount?: number;
-    unitPrice?: number;
-};
-
-const cartItems: CartConfig[] = [
-    {
-        productId: "aurora-abstract-kit",
-        license: "Commercial License",
-        quantity: 1,
-    },
-    {
-        productId: "neon-future-ui",
-        license: "Extended Team",
-        quantity: 1,
-        seatCount: 5,
-        unitPrice: 89,
-    },
-];
+import { useCart } from "@/hooks/useCart";
+import Image from "next/image";
 
 function formatCurrency(value: number) {
     return new Intl.NumberFormat("en-US", {
@@ -33,21 +13,50 @@ function formatCurrency(value: number) {
 }
 
 export default function CartPage() {
-    const resolvedItems = cartItems
-        .map((item) => {
-            try {
-                return resolveItem(item);
-            } catch (error) {
-                console.error(error);
-                return undefined;
-            }
-        })
-        .filter(Boolean) as Array<ReturnType<typeof resolveItem>>;
+    const { items, updateQuantity, removeFromCart, subtotal, totalItems, clearCart } = useCart();
 
-    const subtotal = resolvedItems.reduce((total, item) => total + item.unitPrice * item.quantity, 0);
-    const savings = 12;
-    const processingFees = 4;
-    const total = subtotal - savings + processingFees;
+    const tax = Math.round(subtotal * 0.06 * 100) / 100;
+    const shipping = subtotal > 0 ? 4.99 : 0;
+    const total = subtotal + tax + shipping;
+
+    if (items.length === 0) {
+        return (
+            <main className="flex flex-1 flex-col bg-slate-50">
+                <section className="bg-slate-900 pb-20 pt-28 text-white">
+                    <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 sm:px-6 lg:px-8">
+                        <Link
+                            href="/products"
+                            className="inline-flex items-center gap-2 text-sm font-semibold text-white/70 transition hover:text-white"
+                        >
+                            <span className="material-symbols-outlined text-base">arrow_back</span>
+                            Continue browsing
+                        </Link>
+                        <div className="space-y-4">
+                            <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Your cart is empty</h1>
+                            <p className="max-w-2xl text-sm text-white/70 sm:text-base">
+                                Discover our collection of digital design assets and start building your creative toolkit.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+                <section className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+                    <div className="flex flex-col items-center justify-center rounded-3xl border border-slate-200 bg-white p-12 text-center">
+                        <span className="material-symbols-outlined mb-4 text-6xl text-slate-300">shopping_cart</span>
+                        <h2 className="text-xl font-semibold text-slate-900">No items in cart</h2>
+                        <p className="mt-2 text-sm text-slate-600">Browse our products and add items to get started</p>
+                        <Link
+                            href="/products"
+                            className="mt-6 inline-flex items-center gap-2 rounded-full bg-indigo-500 px-6 py-3 text-sm font-semibold text-white transition hover:bg-indigo-600"
+                        >
+                            <span className="material-symbols-outlined text-base">shopping_bag</span>
+                            Browse products
+                        </Link>
+                    </div>
+                </section>
+            </main>
+        );
+    }
 
     return (
         <main className="flex flex-1 flex-col bg-slate-50">
@@ -65,13 +74,12 @@ export default function CartPage() {
                             <p className="text-xs font-semibold uppercase tracking-[0.4em] text-white/60">Checkout flow</p>
                             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Review your cart</h1>
                             <p className="max-w-2xl text-sm text-white/70 sm:text-base">
-                                Curate your digital assets before heading to checkout. You can update license types, adjust team seats,
-                                and add delivery notes.
+                                {totalItems} {totalItems === 1 ? "item" : "items"} ready for checkout
                             </p>
                         </div>
                         <div className="flex items-center gap-3 rounded-full bg-white/10 px-5 py-3 text-xs font-semibold uppercase tracking-[0.4em] text-white/70">
                             <span className="material-symbols-outlined text-base">shopping_cart_checkout</span>
-                            Step 1 of 3
+                            Step 1 of 2
                         </div>
                     </div>
                 </div>
@@ -80,63 +88,61 @@ export default function CartPage() {
             <section className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
                 <div className="grid gap-10 lg:grid-cols-[2fr_1fr]">
                     <div className="space-y-6">
-                        {resolvedItems.map((item) => (
+                        {items.map((item) => (
                             <article
                                 className="grid gap-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-lg md:grid-cols-[160px_1fr]"
-                                key={item.productId}
+                                key={item.product._id}
                             >
                                 <div
                                     className="h-40 w-full rounded-2xl bg-cover bg-center"
-                                    style={{ backgroundImage: `url('${item.image}')` }}
+                                    style={{
+                                        backgroundImage: `url('${item.product.heroImage || "/placeholder.jpg"}')`,
+                                    }}
                                 />
                                 <div className="flex flex-col justify-between gap-4">
                                     <div className="space-y-3">
                                         <div className="flex flex-wrap items-start justify-between gap-4">
                                             <div>
-                                                <h2 className="text-lg font-semibold text-slate-900">{item.title}</h2>
-                                                <p className="mt-1 text-sm text-slate-600">{item.description}</p>
+                                                <h2 className="text-lg font-semibold text-slate-900">{item.product.name}</h2>
+                                                <p className="mt-1 text-sm text-slate-600">{item.product.description}</p>
                                             </div>
                                             <div className="text-right">
                                                 <div className="text-lg font-semibold text-indigo-600">
-                                                    {formatCurrency(item.unitPrice)}
+                                                    {formatCurrency(item.product.price)}
                                                 </div>
-                                                <div className="text-xs text-slate-500">Per license</div>
+                                                <div className="text-xs text-slate-500">Per unit</div>
                                             </div>
                                         </div>
-                                        <div className="flex flex-wrap items-center gap-4 text-xs text-slate-500">
-                                            <span className="inline-flex items-center gap-1">
-                                                <span className="material-symbols-outlined text-base text-amber-500">star</span>
-                                                {item.rating.toFixed(1)} rating
-                                            </span>
-                                            <span className="inline-flex items-center gap-1">
+                                        {item.license && (
+                                            <div className="flex items-center gap-2 text-xs text-slate-500">
                                                 <span className="material-symbols-outlined text-base text-slate-400">workspace_premium</span>
                                                 {item.license}
-                                            </span>
-                                            {item.seatCount ? (
-                                                <span className="inline-flex items-center gap-1">
-                                                    <span className="material-symbols-outlined text-base text-slate-400">group</span>
-                                                    {item.seatCount} seats
-                                                </span>
-                                            ) : null}
-                                        </div>
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div className="flex flex-wrap items-center justify-between gap-4">
                                         <div className="inline-flex items-center gap-3 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-700">
-                                            <button className="flex size-8 items-center justify-center rounded-full bg-white text-slate-600 transition hover:bg-slate-100">
+                                            <button
+                                                onClick={() => updateQuantity(item.product._id, item.quantity - 1)}
+                                                className="flex size-8 items-center justify-center rounded-full bg-white text-slate-600 transition hover:bg-slate-100 disabled:opacity-50"
+                                                disabled={item.quantity <= 1}
+                                            >
                                                 <span className="material-symbols-outlined text-base">remove</span>
                                             </button>
                                             <span className="px-2 text-base font-semibold">{item.quantity}</span>
-                                            <button className="flex size-8 items-center justify-center rounded-full bg-white text-slate-600 transition hover:bg-slate-100">
+                                            <button
+                                                onClick={() => updateQuantity(item.product._id, item.quantity + 1)}
+                                                className="flex size-8 items-center justify-center rounded-full bg-white text-slate-600 transition hover:bg-slate-100"
+                                            >
                                                 <span className="material-symbols-outlined text-base">add</span>
                                             </button>
                                         </div>
                                         <div className="flex gap-3 text-sm">
-                                            <button className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 font-semibold text-slate-600 transition hover:-translate-y-0.5">
-                                                <span className="material-symbols-outlined text-base">bookmark_add</span>
-                                                Save for later
-                                            </button>
-                                            <button className="inline-flex items-center gap-2 rounded-full border border-transparent bg-rose-50 px-4 py-2 font-semibold text-rose-600 transition hover:-translate-y-0.5 hover:bg-rose-100">
+                                            <button
+                                                onClick={() => removeFromCart(item.product._id)}
+                                                className="inline-flex items-center gap-2 rounded-full border border-transparent bg-rose-50 px-4 py-2 font-semibold text-rose-600 transition hover:-translate-y-0.5 hover:bg-rose-100"
+                                            >
                                                 <span className="material-symbols-outlined text-base">delete</span>
                                                 Remove
                                             </button>
@@ -147,89 +153,69 @@ export default function CartPage() {
                         ))}
 
                         <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-600">
-                            <div className="flex flex-wrap items-center gap-4">
-                                <span className="material-symbols-outlined text-base text-indigo-500">redeem</span>
-                                <input
-                                    className="flex-1 rounded-full border border-slate-200 px-4 py-2 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
-                                    placeholder="Gift card or voucher"
-                                />
-                                <button className="rounded-full bg-indigo-500 px-4 py-2 text-sm font-semibold text-white transition hover:-translate-y-0.5">
-                                    Apply
+                            <div className="flex items-center justify-between">
+                                <p>Have a promo code or gift card?</p>
+                                <button className="font-semibold text-indigo-600 transition hover:text-indigo-500">
+                                    Apply discount
                                 </button>
                             </div>
                         </div>
                     </div>
 
-                    <aside className="h-fit space-y-6 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-                        <div>
+                    <aside className="space-y-6">
+                        <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
                             <h2 className="text-lg font-semibold text-slate-900">Order summary</h2>
-                            <dl className="mt-6 space-y-4 text-sm text-slate-600">
-                                <div className="flex items-center justify-between">
-                                    <dt>Subtotal</dt>
-                                    <dd>{formatCurrency(subtotal)}</dd>
+                            <dl className="mt-6 space-y-4 text-sm">
+                                <div className="flex justify-between">
+                                    <dt className="text-slate-600">Subtotal ({totalItems} items)</dt>
+                                    <dd className="font-semibold text-slate-900">{formatCurrency(subtotal)}</dd>
                                 </div>
-                                <div className="flex items-center justify-between text-emerald-600">
-                                    <dt>Bundle savings</dt>
-                                    <dd>-{formatCurrency(savings)}</dd>
+                                <div className="flex justify-between">
+                                    <dt className="text-slate-600">Tax (6%)</dt>
+                                    <dd className="font-semibold text-slate-900">{formatCurrency(tax)}</dd>
                                 </div>
-                                <div className="flex items-center justify-between">
-                                    <dt>Processing fees</dt>
-                                    <dd>{formatCurrency(processingFees)}</dd>
+                                <div className="flex justify-between">
+                                    <dt className="text-slate-600">Processing fee</dt>
+                                    <dd className="font-semibold text-slate-900">{formatCurrency(shipping)}</dd>
                                 </div>
-                                <div className="flex items-center justify-between text-xs uppercase tracking-[0.4em] text-slate-400">
-                                    <dt>Total due</dt>
-                                    <dd className="text-base font-semibold text-slate-900">{formatCurrency(total)}</dd>
+                                <div className="border-t border-slate-200 pt-4">
+                                    <div className="flex justify-between">
+                                        <dt className="text-base font-semibold text-slate-900">Total</dt>
+                                        <dd className="text-base font-semibold text-indigo-600">{formatCurrency(total)}</dd>
+                                    </div>
                                 </div>
                             </dl>
-                        </div>
-                        <div className="rounded-3xl bg-slate-50 p-5 text-sm text-slate-600">
-                            <div className="flex items-start gap-3">
-                                <span className="material-symbols-outlined text-base text-slate-400">lock</span>
-                                <div>
-                                    <div className="font-semibold text-slate-900">Secure checkout</div>
-                                    <p className="mt-1 text-slate-600">Payments are encrypted and processed with 3D Secure compliance.</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="space-y-3">
+
                             <Link
                                 href="/checkout"
-                                className="flex w-full items-center justify-center gap-2 rounded-full bg-indigo-500 px-5 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5"
+                                className="mt-8 flex w-full items-center justify-center gap-2 rounded-full bg-indigo-500 px-6 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-indigo-600"
                             >
-                                <span className="material-symbols-outlined text-base">credit_card</span>
-                                Continue to checkout
+                                <span className="material-symbols-outlined text-base">shopping_cart_checkout</span>
+                                Proceed to checkout
                             </Link>
-                            <Link
-                                href="/products"
-                                className="flex w-full items-center justify-center gap-2 rounded-full border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5"
+
+                            <button
+                                onClick={clearCart}
+                                className="mt-4 w-full text-center text-sm text-slate-500 transition hover:text-slate-700"
                             >
-                                <span className="material-symbols-outlined text-base">arrow_backward</span>
-                                Keep browsing
-                            </Link>
+                                Clear cart
+                            </button>
+                        </div>
+
+                        <div className="rounded-3xl border border-slate-200 bg-white p-6 text-sm">
+                            <div className="flex items-start gap-3">
+                                <span className="material-symbols-outlined text-indigo-500">verified_user</span>
+                                <div>
+                                    <p className="font-semibold text-slate-900">Secure checkout</p>
+                                    <p className="mt-1 text-xs text-slate-600">
+                                        Your payment information is encrypted and secure
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </aside>
                 </div>
             </section>
         </main>
     );
-}
-
-function resolveItem(item: CartConfig) {
-    const product = catalogProducts.find((catalogProduct) => catalogProduct.id === item.productId);
-    if (!product) {
-        throw new Error(`Unknown product id: ${item.productId}`);
-    }
-
-    const unitPrice =
-        typeof item.unitPrice === "number" ? item.unitPrice : Number.parseFloat(product.price.replace("$", ""));
-
-    return {
-        ...item,
-        title: product.title,
-        description: product.description,
-        image: product.image,
-        priceLabel: product.price,
-        unitPrice,
-        rating: product.rating,
-    };
 }

@@ -1,6 +1,13 @@
-import Link from "next/link";
+"use client";
 
-export default function CheckoutSuccessPage() {
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
+
+function SuccessContent() {
+    const searchParams = useSearchParams();
+    const orderNumber = searchParams.get("orderNumber") || "N/A";
+
     return (
         <main className="flex flex-1 flex-col bg-slate-950 text-white">
             <section className="relative overflow-hidden pb-24 pt-32">
@@ -16,35 +23,35 @@ export default function CheckoutSuccessPage() {
                         </span>
                     </div>
                     <p className="text-xs font-semibold uppercase tracking-[0.4em] text-white/70">Order confirmed</p>
-                    <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">Your downloads are ready</h1>
+                    <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">Your order is complete!</h1>
                     <p className="max-w-2xl text-sm text-white/80 sm:text-base">
-                        We&apos;ve emailed you receipts, license documents, and secure download links. You can revisit and re-download
-                        assets anytime from your account dashboard.
+                        Thank you for your purchase. Your order has been confirmed and is being processed.
+                        You'll receive an email confirmation shortly with your order details.
                     </p>
                     <div className="mt-4 flex flex-wrap items-center justify-center gap-3 text-xs font-semibold uppercase tracking-[0.3em] text-white/60">
                         <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2">
-                            <span className="material-symbols-outlined text-base">download_for_offline</span>
-                            Instant downloads unlocked
+                            <span className="material-symbols-outlined text-base">check_circle</span>
+                            Order placed
                         </span>
                         <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2">
-                            <span className="material-symbols-outlined text-base">lock</span>
-                            Receipt #DH-2047
+                            <span className="material-symbols-outlined text-base">receipt</span>
+                            {orderNumber}
                         </span>
                     </div>
                     <div className="mt-10 grid w-full gap-4 sm:grid-cols-2">
                         <Link
-                            href="/admin"
+                            href="/admin/orders"
                             className="flex items-center justify-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-slate-900 transition hover:-translate-y-0.5"
                         >
-                            <span className="material-symbols-outlined text-base">dashboard</span>
-                            Open dashboard
+                            <span className="material-symbols-outlined text-base">receipt_long</span>
+                            View order
                         </Link>
                         <Link
                             href="/products"
                             className="flex items-center justify-center gap-2 rounded-full border border-white/30 px-6 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5"
                         >
                             <span className="material-symbols-outlined text-base">explore</span>
-                            Keep discovering
+                            Continue shopping
                         </Link>
                     </div>
                 </div>
@@ -56,26 +63,26 @@ export default function CheckoutSuccessPage() {
                         <div className="flex items-start gap-3">
                             <span className="material-symbols-outlined text-base text-indigo-500">workspace_premium</span>
                             <div>
-                                <div className="font-semibold text-slate-900">License & receipts</div>
+                                <div className="font-semibold text-slate-900">Order confirmation</div>
                                 <p className="mt-1 text-slate-600">
-                                    Download PDF receipts, licence certificates, and share with your finance team.
+                                    Check your email for order details and receipt
                                 </p>
                             </div>
                         </div>
                         <div className="flex items-start gap-3">
-                            <span className="material-symbols-outlined text-base text-indigo-500">folder_open</span>
+                            <span className="material-symbols-outlined text-base text-indigo-500">local_shipping</span>
                             <div>
-                                <div className="font-semibold text-slate-900">Version history</div>
+                                <div className="font-semibold text-slate-900">Processing</div>
                                 <p className="mt-1 text-slate-600">
-                                    Every update from creators appears in your library with changelog notes.
+                                    Your order is being prepared for delivery
                                 </p>
                             </div>
                         </div>
                         <div className="flex items-start gap-3">
-                            <span className="material-symbols-outlined text-base text-indigo-500">group</span>
+                            <span className="material-symbols-outlined text-base text-indigo-500">support_agent</span>
                             <div>
-                                <div className="font-semibold text-slate-900">Invite teammates</div>
-                                <p className="mt-1 text-slate-600">Share download seats and manage access from the admin panel.</p>
+                                <div className="font-semibold text-slate-900">Need help?</div>
+                                <p className="mt-1 text-slate-600">Contact support for any questions</p>
                             </div>
                         </div>
                     </div>
@@ -83,25 +90,25 @@ export default function CheckoutSuccessPage() {
                     <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
                         <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
                             <div>
-                                <h2 className="text-xl font-semibold">Next steps</h2>
+                                <h2 className="text-xl font-semibold">What's next?</h2>
                                 <p className="mt-2 text-sm text-slate-600">
-                                    Head to your creator dashboard to manage subscriptions, request revisions, or explore royalty-free add-ons.
+                                    View your order in the admin dashboard or continue browsing our products.
                                 </p>
                             </div>
                             <div className="flex flex-wrap gap-3">
                                 <Link
-                                    href="/admin"
+                                    href="/admin/orders"
                                     className="inline-flex items-center gap-2 rounded-full bg-indigo-500 px-5 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5"
                                 >
-                                    <span className="material-symbols-outlined text-base">analytics</span>
-                                    View purchases
+                                    <span className="material-symbols-outlined text-base">list_alt</span>
+                                    My orders
                                 </Link>
                                 <Link
-                                    href="/products"
+                                    href="/"
                                     className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5"
                                 >
-                                    <span className="material-symbols-outlined text-base">storefront</span>
-                                    Explore new assets
+                                    <span className="material-symbols-outlined text-base">home</span>
+                                    Home
                                 </Link>
                             </div>
                         </div>
@@ -109,5 +116,17 @@ export default function CheckoutSuccessPage() {
                 </div>
             </section>
         </main>
+    );
+}
+
+export default function CheckoutSuccessPage() {
+    return (
+        <Suspense fallback={
+            <div className="flex min-h-screen items-center justify-center bg-slate-950">
+                <div className="text-white">Loading...</div>
+            </div>
+        }>
+            <SuccessContent />
+        </Suspense>
     );
 }
