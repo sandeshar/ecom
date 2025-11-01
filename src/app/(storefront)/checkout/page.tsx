@@ -50,21 +50,11 @@ export default function CheckoutPage() {
         setLoading(true);
 
         try {
-            // Generate order number
-            const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
-
-            // Prepare order data
+            // Prepare order data (backend will generate orderNumber)
             const orderData = {
-                orderNumber,
-                status: "Processing",
-                paymentStatus: "Paid",
                 items: items.map((item) => ({
-                    product: item.product._id,
-                    name: item.product.name,
-                    price: item.product.price,
+                    productId: item.product._id,
                     quantity: item.quantity,
-                    subtotal: item.product.price * item.quantity,
-                    heroImage: item.product.heroImage,
                 })),
                 customer: {
                     name: `${formData.firstName} ${formData.lastName}`,
@@ -86,14 +76,14 @@ export default function CheckoutPage() {
             };
 
             // Create order via API
-            await apiRequest("/orders", {
+            const response = await apiRequest<{ orderNumber: string }>("/orders", {
                 method: "POST",
                 data: orderData,
             });
 
             // Clear cart and redirect to success page
             clearCart();
-            router.push(`/checkout/success?orderNumber=${orderNumber}`);
+            router.push(`/checkout/success?orderNumber=${response.orderNumber}`);
         } catch (err) {
             setError(err instanceof Error ? err.message : "Failed to process order");
             setLoading(false);
