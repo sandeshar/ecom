@@ -1,9 +1,26 @@
-const kpis = [
-    { label: "Revenue", value: "$128k", change: "+8.4%", context: "vs last month", icon: "stacked_line_chart" },
-    { label: "Orders", value: "2,140", change: "+4.1%", context: "Completed", icon: "shopping_cart" },
-    { label: "Average order value", value: "$59.95", change: "+$2.50", context: "Per order", icon: "paid" },
-    { label: "Conversion rate", value: "3.2%", change: "+0.6%", context: "Storewide", icon: "trending_up" },
-];
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { apiRequest } from "@/lib/api-client";
+import type { ProductListResponse } from "@/types/product";
+
+type OrderStats = {
+    totals: {
+        totalRevenue: number;
+        totalOrders: number;
+        avgOrderValue: number;
+    };
+    statusBreakdown: Array<{ _id: string; count: number }>;
+};
+
+function formatCurrency(value: number) {
+    return new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+        minimumFractionDigits: 0,
+    }).format(value);
+}
 
 const channelBreakdown = [
     { channel: "Organic", revenue: "$42,300", share: "33%", icon: "eco" },
@@ -19,6 +36,45 @@ const quickInsights = [
 ];
 
 export default function AdminAnalyticsPage() {
+    const { token } = useAuth();
+    const [stats, setStats] = useState<OrderStats | null>(null);
+    const [topProduct, setTopProduct] = useState<string>("");
+    const [loading, setLoading] = useState(true);
+
+    const fetchAnalytics = useCallback(async () => {
+        if (!token) return;
+        setLoading(true);
+        try {
+            const [statsRes, productsRes] = await Promise.all([
+                apiRequest<OrderStats>("/orders/stats", { token }),
+                apiRequest<ProductListResponse>("/products", { query: { limit: 1, page: 1 }, token }),
+            ]);
+            setStats(statsRes);
+            if (productsRes.data.length > 0) {
+                setTopProduct(productsRes.data[0].name);
+            }
+        } catch (error) {
+            console.error("Failed to fetch analytics", error);
+        } finally {
+            setLoading(false);
+        }
+    }, [token]);
+
+    useEffect(() => {
+        fetchAnalytics();
+    }, [fetchAnalytics]);
+
+    const totalRevenue = stats?.totals.totalRevenue || 0;
+    const totalOrders = stats?.totals.totalOrders || 0;
+    const avgOrderValue = stats?.totals.avgOrderValue || 0;
+    const conversionRate = 3.2; // Placeholder - would need visitor tracking
+
+    const kpis = [
+        { label: "Revenue", value: formatCurrency(totalRevenue), change: "+8.4%", context: "vs last month", icon: "stacked_line_chart" },
+        { label: "Orders", value: totalOrders.toString(), change: "+4.1%", context: "Completed", icon: "shopping_cart" },
+        { label: "Average order value", value: formatCurrency(avgOrderValue), change: "+$2.50", context: "Per order", icon: "paid" },
+        { label: "Conversion rate", value: `${conversionRate}%`, change: "+0.6%", context: "Storewide", icon: "trending_up" },
+    ];
     return (
         <main className="flex flex-1 flex-col">
             <header className="border-b border-slate-200 bg-white">

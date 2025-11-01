@@ -191,8 +191,8 @@ export default function AdminProductsPage() {
                                             <td className="px-4 py-4">{product.inventory ?? "—"}</td>
                                             <td className="px-4 py-4">
                                                 <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${product.published
-                                                        ? "bg-emerald-50 text-emerald-600"
-                                                        : "bg-slate-100 text-slate-600"
+                                                    ? "bg-emerald-50 text-emerald-600"
+                                                    : "bg-slate-100 text-slate-600"
                                                     }`}>
                                                     <span className="material-symbols-outlined text-sm">
                                                         {product.published ? "visibility" : "visibility_off"}
@@ -214,7 +214,7 @@ export default function AdminProductsPage() {
                                                     </Link>
                                                     <Link
                                                         className="inline-flex items-center gap-1 rounded-full border border-transparent bg-slate-900 px-3 py-1 font-semibold text-white transition hover:-translate-y-0.5"
-                                                        href={`/admin/products/${product._id}/edit`}
+                                                        href={`/admin/products/${product._id}`}
                                                     >
                                                         <span className="material-symbols-outlined text-sm">edit</span>
                                                         Edit

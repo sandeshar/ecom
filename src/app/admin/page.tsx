@@ -1,22 +1,34 @@
-const headlineMetrics = [
-    { label: "Revenue", value: "$128,420", change: "+8.4%", icon: "monitoring" },
-    { label: "Orders", value: "2,140", change: "+4.1%", icon: "shopping_bag" },
-    { label: "Conversion", value: "3.2%", change: "+0.6%", icon: "trending_up" },
-    { label: "Returning customers", value: "32%", change: "+2.3%", icon: "loyalty" },
-];
+"use client";
 
-const recentOrders = [
-    { id: "#2047", customer: "Jordan Rivera", email: "jordan@email.com", total: "$128.00", status: "Fulfilled" },
-    { id: "#2046", customer: "Daphne Lewis", email: "daphne@email.com", total: "$76.50", status: "Processing" },
-    { id: "#2045", customer: "Kellan Ortiz", email: "kellan@email.com", total: "$52.00", status: "Fulfilled" },
-    { id: "#2044", customer: "Priya Desai", email: "priya@email.com", total: "$248.90", status: "Awaiting pickup" },
-];
+import { useCallback, useEffect, useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { apiRequest } from "@/lib/api-client";
+import type { Order, OrderListResponse } from "@/types/order";
+import type { Product, ProductListResponse } from "@/types/product";
 
-const inventoryAlerts = [
-    { sku: "PRO-8892", product: "Gradient Mesh Poster Pack", stock: 6, status: "Low" },
-    { sku: "PRO-7715", product: "Modern UI Card Set", stock: 12, status: "Reorder" },
-    { sku: "PRO-6407", product: "Brand Guidelines Kit", stock: 0, status: "Out" },
-];
+type OrderStats = {
+    totals: {
+        totalRevenue: number;
+        totalOrders: number;
+        avgOrderValue: number;
+    };
+    statusBreakdown: Array<{ _id: string; count: number }>;
+};
+
+type InventoryAlert = {
+    sku: string;
+    product: string;
+    stock: number;
+    status: string;
+};
+
+function formatCurrency(value: number) {
+    return new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+        minimumFractionDigits: 2,
+    }).format(value);
+}
 
 const followUps = [
     "Schedule email blast for new arrivals.",
@@ -25,6 +37,59 @@ const followUps = [
 ];
 
 export default function AdminDashboardPage() {
+    const { token } = useAuth();
+    const [stats, setStats] = useState<OrderStats | null>(null);
+    const [recentOrders, setRecentOrders] = useState<Order[]>([]);
+    const [inventoryAlerts, setInventoryAlerts] = useState<InventoryAlert[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    const fetchDashboardData = useCallback(async () => {
+        if (!token) return;
+        setLoading(true);
+        try {
+            const [statsRes, ordersRes, productsRes] = await Promise.all([
+                apiRequest<OrderStats>("/orders/stats", { token }),
+                apiRequest<OrderListResponse>("/orders", { query: { limit: 4, page: 1 }, token }),
+                apiRequest<ProductListResponse>("/products", { query: { limit: 100, page: 1 }, token }),
+            ]);
+            setStats(statsRes);
+            setRecentOrders(ordersRes.data);
+
+            // Generate inventory alerts from products with low stock
+            const alerts = productsRes.data
+                .filter((p: Product) => p.inventory !== undefined && p.inventory < 15)
+                .slice(0, 3)
+                .map((p: Product) => ({
+                    sku: p.sku || "N/A",
+                    product: p.name,
+                    stock: p.inventory ?? 0,
+                    status: (p.inventory ?? 0) === 0 ? "Out" : (p.inventory ?? 0) < 5 ? "Low" : "Reorder",
+                }));
+            setInventoryAlerts(alerts);
+        } catch (error) {
+            console.error("Failed to fetch dashboard data", error);
+        } finally {
+            setLoading(false);
+        }
+    }, [token]);
+
+    useEffect(() => {
+        fetchDashboardData();
+    }, [fetchDashboardData]);
+
+    const totalRevenue = stats?.totals.totalRevenue || 0;
+    const totalOrders = stats?.totals.totalOrders || 0;
+    const avgOrderValue = stats?.totals.avgOrderValue || 0;
+
+    // Calculate conversion rate (placeholder - would need actual visitor data)
+    const conversionRate = 3.2;
+
+    const headlineMetrics = [
+        { label: "Revenue", value: formatCurrency(totalRevenue), change: "+8.4%", icon: "monitoring" },
+        { label: "Orders", value: totalOrders.toString(), change: "+4.1%", icon: "shopping_bag" },
+        { label: "Conversion", value: `${conversionRate}%`, change: "+0.6%", icon: "trending_up" },
+        { label: "Avg Order Value", value: formatCurrency(avgOrderValue), change: "+$2.50", icon: "paid" },
+    ];
     return (
         <main className="flex flex-1 flex-col bg-slate-50 text-slate-900">
             <header className="border-b border-slate-200 bg-white">
@@ -59,36 +124,46 @@ export default function AdminDashboardPage() {
                             </div>
                             <span className="material-symbols-outlined text-base text-slate-400">receipt_long</span>
                         </div>
-                        <div className="overflow-x-auto">
-                            <table className="min-w-full text-left text-sm text-slate-600">
-                                <thead className="bg-slate-50 text-xs uppercase text-slate-500">
-                                    <tr>
-                                        <th className="px-4 py-3">Order</th>
-                                        <th className="px-4 py-3">Customer</th>
-                                        <th className="px-4 py-3">Total</th>
-                                        <th className="px-4 py-3">Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {recentOrders.map((order) => (
-                                        <tr className="border-t border-slate-100" key={order.id}>
-                                            <td className="px-4 py-3 font-semibold text-slate-900">{order.id}</td>
-                                            <td className="px-4 py-3">
-                                                <p className="font-medium text-slate-900">{order.customer}</p>
-                                                <p className="text-xs text-slate-500">{order.email}</p>
-                                            </td>
-                                            <td className="px-4 py-3 font-medium text-slate-900">{order.total}</td>
-                                            <td className="px-4 py-3">
-                                                <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
-                                                    <span className="material-symbols-outlined text-sm">local_shipping</span>
-                                                    {order.status}
-                                                </span>
-                                            </td>
+                        {loading ? (
+                            <div className="flex items-center justify-center py-12 text-sm text-slate-500">
+                                Loading orders...
+                            </div>
+                        ) : recentOrders.length === 0 ? (
+                            <div className="px-4 py-12 text-center text-sm text-slate-500">
+                                No orders yet
+                            </div>
+                        ) : (
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full text-left text-sm text-slate-600">
+                                    <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+                                        <tr>
+                                            <th className="px-4 py-3">Order</th>
+                                            <th className="px-4 py-3">Customer</th>
+                                            <th className="px-4 py-3">Total</th>
+                                            <th className="px-4 py-3">Status</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
+                                    </thead>
+                                    <tbody>
+                                        {recentOrders.map((order) => (
+                                            <tr className="border-t border-slate-100" key={order._id}>
+                                                <td className="px-4 py-3 font-semibold text-slate-900">{order.orderNumber}</td>
+                                                <td className="px-4 py-3">
+                                                    <p className="font-medium text-slate-900">{order.customer.name}</p>
+                                                    <p className="text-xs text-slate-500">{order.customer.email}</p>
+                                                </td>
+                                                <td className="px-4 py-3 font-medium text-slate-900">{formatCurrency(order.total)}</td>
+                                                <td className="px-4 py-3">
+                                                    <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+                                                        <span className="material-symbols-outlined text-sm">local_shipping</span>
+                                                        {order.status}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
                     </article>
 
                     <aside className="space-y-6">
@@ -97,14 +172,20 @@ export default function AdminDashboardPage() {
                                 <h2 className="text-base font-semibold">Inventory alerts</h2>
                                 <span className="material-symbols-outlined text-base text-rose-400">warning</span>
                             </div>
-                            <ul className="mt-4 space-y-3 text-sm text-slate-600">
-                                {inventoryAlerts.map((item) => (
-                                    <li className="rounded-lg border border-slate-100 px-3 py-2" key={item.sku}>
-                                        <p className="font-semibold text-slate-900">{item.product}</p>
-                                        <p className="text-xs text-slate-500">SKU {item.sku} · Stock {item.stock} · {item.status}</p>
-                                    </li>
-                                ))}
-                            </ul>
+                            {loading ? (
+                                <div className="mt-4 text-center text-xs text-slate-500">Loading...</div>
+                            ) : inventoryAlerts.length === 0 ? (
+                                <div className="mt-4 text-center text-xs text-slate-500">All inventory levels healthy</div>
+                            ) : (
+                                <ul className="mt-4 space-y-3 text-sm text-slate-600">
+                                    {inventoryAlerts.map((item) => (
+                                        <li className="rounded-lg border border-slate-100 px-3 py-2" key={item.sku}>
+                                            <p className="font-semibold text-slate-900">{item.product}</p>
+                                            <p className="text-xs text-slate-500">SKU {item.sku} · Stock {item.stock} · {item.status}</p>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
                         </section>
 
                         <section className="rounded-xl border border-slate-200 bg-white p-4">
