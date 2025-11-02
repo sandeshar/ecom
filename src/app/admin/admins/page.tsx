@@ -44,7 +44,7 @@ export default function AdminTeamPage() {
     const fetchAdmins = async () => {
         if (!token) return;
         try {
-            const data = await apiRequest("GET", "/admins", token);
+            const data = await apiRequest<Admin[]>("/admins", { token });
             setAdmins(data);
         } catch (error) {
             console.error("Failed to fetch admins:", error);
@@ -81,15 +81,23 @@ export default function AdminTeamPage() {
 
         try {
             if (editingAdmin) {
-                await apiRequest("PUT", `/admins/${editingAdmin._id}`, token, {
-                    name: adminData.name,
-                    role: adminData.role,
-                    permissions: adminData.permissions,
-                    status: formData.get("status") as string,
+                await apiRequest(`/admins/${editingAdmin._id}`, {
+                    method: "PUT",
+                    token,
+                    data: {
+                        name: adminData.name,
+                        role: adminData.role,
+                        permissions: adminData.permissions,
+                        status: formData.get("status") as string,
+                    },
                 });
                 setMessage({ type: "success", text: "Admin updated successfully" });
             } else {
-                await apiRequest("POST", "/admins", token, adminData);
+                await apiRequest("/admins", {
+                    method: "POST",
+                    token,
+                    data: adminData,
+                });
                 setMessage({ type: "success", text: "Admin created successfully" });
             }
             fetchAdmins();
@@ -104,7 +112,10 @@ export default function AdminTeamPage() {
         if (!confirm("Are you sure you want to delete this admin?")) return;
 
         try {
-            await apiRequest("DELETE", `/admins/${id}`, token);
+            await apiRequest(`/admins/${id}`, {
+                method: "DELETE",
+                token,
+            });
             setMessage({ type: "success", text: "Admin deleted successfully" });
             fetchAdmins();
         } catch (error: any) {
@@ -185,8 +196,8 @@ export default function AdminTeamPage() {
                                     <td className="px-6 py-4">
                                         <span
                                             className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${admin.role === "superadmin"
-                                                    ? "bg-purple-50 text-purple-600"
-                                                    : "bg-blue-50 text-blue-600"
+                                                ? "bg-purple-50 text-purple-600"
+                                                : "bg-blue-50 text-blue-600"
                                                 }`}
                                         >
                                             <span className="material-symbols-outlined text-sm">
@@ -198,8 +209,8 @@ export default function AdminTeamPage() {
                                     <td className="px-6 py-4">
                                         <span
                                             className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${admin.status === "active"
-                                                    ? "bg-emerald-50 text-emerald-600"
-                                                    : "bg-slate-50 text-slate-600"
+                                                ? "bg-emerald-50 text-emerald-600"
+                                                : "bg-slate-50 text-slate-600"
                                                 }`}
                                         >
                                             <span className="size-1.5 rounded-full bg-current" />
@@ -440,31 +451,5 @@ export default function AdminTeamPage() {
                 </div>
             )}
         </main>
-    );
-}
-<span className="material-symbols-outlined text-sm">verified_user</span>
-{ member.status }
-                                        </span >
-                                    </td >
-                                    <td className="px-4 py-4">{member.lastLogin}</td>
-                                    <td className="px-4 py-4">
-                                        <div className="inline-flex items-center gap-2">
-                                            <button className="inline-flex items-center gap-1 rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600 transition hover:border-indigo-200 hover:text-indigo-600" type="button">
-                                                <span className="material-symbols-outlined text-base">edit</span>
-                                                Edit
-                                            </button>
-                                            <button className="inline-flex items-center gap-1 rounded-full border border-rose-200 px-3 py-1 text-xs font-semibold text-rose-600 transition hover:bg-rose-50" type="button">
-                                                <span className="material-symbols-outlined text-base">lock_person</span>
-                                                Revoke
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr >
-                            ))}
-                        </tbody >
-                    </table >
-                </div >
-            </section >
-        </main >
     );
 }

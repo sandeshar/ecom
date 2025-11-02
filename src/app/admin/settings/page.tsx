@@ -32,7 +32,7 @@ export default function AdminSettingsPage() {
 
     const fetchSettings = async () => {
         try {
-            const data = await apiRequest("GET", "/settings");
+            const data = await apiRequest<Settings>("/settings");
             setSettings(data);
         } catch (error) {
             console.error("Failed to fetch settings:", error);
@@ -63,7 +63,11 @@ export default function AdminSettingsPage() {
         };
 
         try {
-            const response = await apiRequest("PUT", "/settings", token, updatedSettings);
+            const response = await apiRequest<{ message: string; settings: Settings }>("/settings", {
+                method: "PUT",
+                token,
+                data: updatedSettings,
+            });
             setSettings(response.settings);
             setMessage({ type: "success", text: "Settings saved successfully!" });
         } catch (error) {
