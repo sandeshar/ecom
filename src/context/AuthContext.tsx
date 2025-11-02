@@ -3,9 +3,25 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
 
+type AdminPermissions = {
+    canViewProducts: boolean;
+    canCreateProducts: boolean;
+    canEditProducts: boolean;
+    canDeleteProducts: boolean;
+    canViewOrders: boolean;
+    canEditOrders: boolean;
+    canDeleteOrders: boolean;
+    canViewCustomers: boolean;
+    canViewAnalytics: boolean;
+    canEditSettings: boolean;
+    canManageAdmins: boolean;
+};
+
 type AuthUser = {
     email: string;
     name: string;
+    role?: "superadmin" | "admin";
+    permissions?: AdminPermissions;
 };
 
 type AuthContextValue = {
@@ -17,6 +33,8 @@ type AuthContextValue = {
     isAuthenticated: boolean;
     error: string | null;
     clearError: () => void;
+    hasPermission: (permission: keyof AdminPermissions) => boolean;
+    isSuperAdmin: boolean;
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -64,14 +82,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setLoading(true);
         setError(null);
         try {
-            const response = await apiRequest<{ token: string; user: AuthUser }>("/auth/login", {
+            const response = await apiRequest<{ token: string; admin: AuthUser }>("/auth/login", {
                 method: "POST",
                 data: { email, password },
             });
 
             setToken(response.token);
-            setUser(response.user);
-            persist({ token: response.token, user: response.user });
+            setUser(response.admin);
+            persist({ token: response.token, user: response.admin });
         } catch (loginError) {
             const message = loginError instanceof Error ? loginError.message : "Unable to login";
             setError(message);
@@ -89,6 +107,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const clearError = useCallback(() => setError(null), []);
 
+    const hasPermission = useCallback((permission: keyof AdminPermissions) => {
+        if (!user) return false;
+        if (user.role === "superadmin") return true;
+        return user.permissions?.[permission] || false;
+    }, [user]);
+
+    const isSuperAdmin = useMemo(() => user?.role === "superadmin", [user]);
+
     const value = useMemo<AuthContextValue>(() => ({
         user,
         token,
@@ -98,6 +124,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isAuthenticated: Boolean(token),
         error,
         clearError,
+        hasPermission,
+        isSuperAdmin,
     }), [user, token, loading, login, logout, error, clearError]);
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

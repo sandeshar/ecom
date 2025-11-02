@@ -6,6 +6,7 @@ import Notify from "@/components/common/Notification";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/api-client";
 import type { Product, ProductListResponse } from "@/types/product";
+import { PermissionGuard } from "@/components/admin/PermissionGuard";
 
 type BannerState = { text: string; type: "success" | "error" } | null;
 
@@ -18,7 +19,7 @@ function formatCurrency(value: number) {
 }
 
 export default function AdminProductsPage() {
-    const { token } = useAuth();
+    const { token, hasPermission } = useAuth();
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -112,13 +113,15 @@ export default function AdminProductsPage() {
                         </p>
                     </div>
                     <div className="flex flex-wrap items-center gap-2 text-sm">
-                        <Link
-                            className="inline-flex items-center gap-2 rounded-full bg-indigo-500 px-4 py-2 font-semibold text-white transition hover:bg-indigo-600"
-                            href="/admin/products/new"
-                        >
-                            <span className="material-symbols-outlined text-base">add</span>
-                            New product
-                        </Link>
+                        <PermissionGuard permission="canCreateProducts">
+                            <Link
+                                className="inline-flex items-center gap-2 rounded-full bg-indigo-500 px-4 py-2 font-semibold text-white transition hover:bg-indigo-600"
+                                href="/admin/products/new"
+                            >
+                                <span className="material-symbols-outlined text-base">add</span>
+                                New product
+                            </Link>
+                        </PermissionGuard>
                     </div>
                 </div>
             </header>
@@ -212,33 +215,39 @@ export default function AdminProductsPage() {
                                                         <span className="material-symbols-outlined text-sm">visibility</span>
                                                         View
                                                     </Link>
-                                                    <Link
-                                                        className="inline-flex items-center gap-1 rounded-full border border-transparent bg-slate-900 px-3 py-1 font-semibold text-white transition hover:-translate-y-0.5"
-                                                        href={`/admin/products/${product._id}`}
-                                                    >
-                                                        <span className="material-symbols-outlined text-sm">edit</span>
-                                                        Edit
-                                                    </Link>
-                                                    <button
-                                                        className="inline-flex items-center gap-1 rounded-full border border-slate-200 px-3 py-1 font-semibold text-slate-600 transition hover:border-indigo-200 hover:text-indigo-600"
-                                                        disabled={workingProductId === product._id}
-                                                        onClick={() => handleTogglePublish(product)}
-                                                        type="button"
-                                                    >
-                                                        <span className="material-symbols-outlined text-sm">
-                                                            {product.published ? "visibility_off" : "publish"}
-                                                        </span>
-                                                        {product.published ? "Unpublish" : "Publish"}
-                                                    </button>
-                                                    <button
-                                                        className="inline-flex items-center gap-1 rounded-full border border-transparent bg-rose-50 px-3 py-1 font-semibold text-rose-600 transition hover:bg-rose-100"
-                                                        disabled={workingProductId === product._id}
-                                                        onClick={() => handleDelete(product)}
-                                                        type="button"
-                                                    >
-                                                        <span className="material-symbols-outlined text-sm">delete</span>
-                                                        Delete
-                                                    </button>
+                                                    <PermissionGuard permission="canEditProducts">
+                                                        <Link
+                                                            className="inline-flex items-center gap-1 rounded-full border border-transparent bg-slate-900 px-3 py-1 font-semibold text-white transition hover:-translate-y-0.5"
+                                                            href={`/admin/products/${product._id}`}
+                                                        >
+                                                            <span className="material-symbols-outlined text-sm">edit</span>
+                                                            Edit
+                                                        </Link>
+                                                    </PermissionGuard>
+                                                    <PermissionGuard permission="canEditProducts">
+                                                        <button
+                                                            className="inline-flex items-center gap-1 rounded-full border border-slate-200 px-3 py-1 font-semibold text-slate-600 transition hover:border-indigo-200 hover:text-indigo-600 disabled:opacity-50"
+                                                            disabled={workingProductId === product._id}
+                                                            onClick={() => handleTogglePublish(product)}
+                                                            type="button"
+                                                        >
+                                                            <span className="material-symbols-outlined text-sm">
+                                                                {product.published ? "visibility_off" : "publish"}
+                                                            </span>
+                                                            {product.published ? "Unpublish" : "Publish"}
+                                                        </button>
+                                                    </PermissionGuard>
+                                                    <PermissionGuard permission="canDeleteProducts">
+                                                        <button
+                                                            className="inline-flex items-center gap-1 rounded-full border border-transparent bg-rose-50 px-3 py-1 font-semibold text-rose-600 transition hover:bg-rose-100 disabled:opacity-50"
+                                                            disabled={workingProductId === product._id}
+                                                            onClick={() => handleDelete(product)}
+                                                            type="button"
+                                                        >
+                                                            <span className="material-symbols-outlined text-sm">delete</span>
+                                                            Delete
+                                                        </button>
+                                                    </PermissionGuard>
                                                 </div>
                                             </td>
                                         </tr>

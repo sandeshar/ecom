@@ -8,6 +8,8 @@ type NavItem = {
     label: string;
     href: string;
     icon: string;
+    permission?: string;
+    superAdminOnly?: boolean;
 };
 
 type NavSection = {
@@ -20,23 +22,23 @@ const navSections: NavSection[] = [
         title: "Overview",
         items: [
             { label: "Dashboard", href: "/admin", icon: "space_dashboard" },
-            { label: "Analytics", href: "/admin/analytics", icon: "insights" },
+            { label: "Analytics", href: "/admin/analytics", icon: "insights", permission: "canViewAnalytics" },
         ],
     },
     {
         title: "Management",
         items: [
-            { label: "Products", href: "/admin/products", icon: "inventory_2" },
-            { label: "Orders", href: "/admin/orders", icon: "receipt_long" },
-            { label: "Customers", href: "/admin/customers", icon: "group" },
-            { label: "Admins", href: "/admin/admins", icon: "shield_person" },
-            { label: "Inventory", href: "/admin/inventory", icon: "warehouse" },
+            { label: "Products", href: "/admin/products", icon: "inventory_2", permission: "canViewProducts" },
+            { label: "Orders", href: "/admin/orders", icon: "receipt_long", permission: "canViewOrders" },
+            { label: "Customers", href: "/admin/customers", icon: "group", permission: "canViewCustomers" },
+            { label: "Admins", href: "/admin/admins", icon: "shield_person", superAdminOnly: true },
+            { label: "Inventory", href: "/admin/inventory", icon: "warehouse", permission: "canViewProducts" },
         ],
     },
     {
         title: "Settings",
         items: [
-            { label: "Store Settings", href: "/admin/settings", icon: "tune" },
+            { label: "Store Settings", href: "/admin/settings", icon: "tune", permission: "canEditSettings" },
         ],
     },
 ];
@@ -48,7 +50,24 @@ function isActive(pathname: string, href: string) {
 
 export default function AdminSidebar() {
     const pathname = usePathname();
-    const { user, logout } = useAuth();
+    const { user, logout, hasPermission, isSuperAdmin } = useAuth();
+
+    // Filter nav items based on permissions
+    const filteredSections = navSections.map(section => ({
+        ...section,
+        items: section.items.filter(item => {
+            // Super admin only items
+            if (item.superAdminOnly) {
+                return isSuperAdmin;
+            }
+            // Permission-based items
+            if (item.permission) {
+                return hasPermission(item.permission as any);
+            }
+            // No restriction
+            return true;
+        })
+    })).filter(section => section.items.length > 0);
 
     return (
         <aside className="sticky top-0 flex h-screen w-64 flex-col overflow-y-auto border-r border-slate-200 bg-white/95 px-4 py-6 backdrop-blur">
@@ -63,7 +82,7 @@ export default function AdminSidebar() {
             </div>
 
             <nav className="mt-8 flex flex-1 flex-col gap-6 text-sm font-medium text-slate-600">
-                {navSections.map((section) => (
+                {filteredSections.map((section) => (
                     <div key={section.title}>
                         <p className="px-3 text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
                             {section.title}
@@ -76,14 +95,14 @@ export default function AdminSidebar() {
                                         key={item.href}
                                         href={item.href}
                                         className={`group inline-flex items-center gap-3 rounded-2xl px-3 py-2 transition ${active
-                                                ? "bg-indigo-50 text-indigo-600 shadow-sm"
-                                                : "hover:bg-slate-100 hover:text-slate-900"
+                                            ? "bg-indigo-50 text-indigo-600 shadow-sm"
+                                            : "hover:bg-slate-100 hover:text-slate-900"
                                             }`}
                                     >
                                         <span
                                             className={`material-symbols-outlined text-base ${active
-                                                    ? "text-indigo-500"
-                                                    : "text-slate-400 group-hover:text-slate-500"
+                                                ? "text-indigo-500"
+                                                : "text-slate-400 group-hover:text-slate-500"
                                                 }`}
                                         >
                                             {item.icon}
