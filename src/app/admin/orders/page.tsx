@@ -202,18 +202,26 @@ export default function AdminOrdersPage() {
                                                 <td className="px-4 py-4">{order.items.length}</td>
                                                 <td className="px-4 py-4 font-medium text-slate-900">{formatCurrency(order.total)}</td>
                                                 <td className="px-4 py-4">
-                                                    <select
-                                                        className={`rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold transition ${styles.badge}`}
-                                                        disabled={workingOrderId === order._id}
-                                                        onChange={(event) => handleUpdateStatus(order, event.target.value as Order["status"])}
-                                                        value={order.status}
-                                                    >
-                                                        {statusOptions.map((status) => (
-                                                            <option key={status} value={status}>
-                                                                {status}
-                                                            </option>
-                                                        ))}
-                                                    </select>
+                                                    <PermissionGuard permission="canEditOrders">
+                                                        <select
+                                                            className={`rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold transition ${styles.badge}`}
+                                                            disabled={workingOrderId === order._id}
+                                                            onChange={(event) => handleUpdateStatus(order, event.target.value as Order["status"])}
+                                                            value={order.status}
+                                                        >
+                                                            {statusOptions.map((status) => (
+                                                                <option key={status} value={status}>
+                                                                    {status}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                    </PermissionGuard>
+                                                    {!hasPermission('canEditOrders') && (
+                                                        <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${styles.badge}`}>
+                                                            <span className="size-1.5 rounded-full bg-current" />
+                                                            {order.status}
+                                                        </span>
+                                                    )}
                                                 </td>
                                                 <td className="px-4 py-4 text-xs text-slate-500">
                                                     {new Date(order.createdAt).toLocaleString()}
@@ -227,15 +235,17 @@ export default function AdminOrdersPage() {
                                                             <span className="material-symbols-outlined text-sm">open_in_new</span>
                                                             View
                                                         </Link>
-                                                        <button
-                                                            className="inline-flex items-center gap-1 rounded-full border border-transparent bg-slate-900 px-3 py-1 font-semibold text-white transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
-                                                            disabled={workingOrderId === order._id || order.status === "Fulfilled"}
-                                                            onClick={() => markFulfilled(order)}
-                                                            type="button"
-                                                        >
-                                                            <span className="material-symbols-outlined text-sm">task_alt</span>
-                                                            Mark fulfilled
-                                                        </button>
+                                                        <PermissionGuard permission="canEditOrders">
+                                                            <button
+                                                                className="inline-flex items-center gap-1 rounded-full border border-transparent bg-slate-900 px-3 py-1 font-semibold text-white transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
+                                                                disabled={workingOrderId === order._id || order.status === "Fulfilled"}
+                                                                onClick={() => markFulfilled(order)}
+                                                                type="button"
+                                                            >
+                                                                <span className="material-symbols-outlined text-sm">task_alt</span>
+                                                                Mark fulfilled
+                                                            </button>
+                                                        </PermissionGuard>
                                                     </div>
                                                 </td>
                                             </tr>
