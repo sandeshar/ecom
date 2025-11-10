@@ -6,6 +6,7 @@ import Notify from "@/components/common/Notification";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/api-client";
 import type { Order, OrderListResponse } from "@/types/order";
+import { PermissionGuard } from "@/components/admin/PermissionGuard";
 
 const statusStyles: Record<Order["status"], { badge: string; text: string }> = {
     Processing: { badge: "bg-amber-50 text-amber-600", text: "text-amber-600" },
@@ -35,7 +36,7 @@ function formatCurrency(value: number) {
 }
 
 export default function AdminOrdersPage() {
-    const { token } = useAuth();
+    const { token, hasPermission } = useAuth();
     const [orders, setOrders] = useState<Order[]>([]);
     const [stats, setStats] = useState<OrderStats | null>(null);
     const [loading, setLoading] = useState(true);
